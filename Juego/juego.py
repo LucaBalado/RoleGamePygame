@@ -17,18 +17,10 @@ font = pygame.font.Font(None, 36)
 # Cargar imágenes
 bosque_imagen = pygame.image.load("assets/bosque.png")  # Imagen del bosque
 papiro_imagen = pygame.image.load("assets/papiro.png")  # Imagen del papiro
-splashart_humano = pygame.image.load("assets/Orco-Splashart.png")  # Imagen de splashart para Humano
-splashart_elfo = pygame.image.load("assets/Orco-Splashart.png")  # Imagen de splashart para Elfo
-splashart_orco = pygame.image.load("assets/Orco-Splashart.png")  # Imagen de splashart para Orco
 
-# Escalar las imágenes para que no sean demasiado grandes
-splashart_humano = pygame.transform.scale(splashart_humano, (100, 100))  # Tamaño pequeño para el splashart
-splashart_elfo = pygame.transform.scale(splashart_elfo, (100, 100))  # Tamaño pequeño para el splashart
-splashart_orco = pygame.transform.scale(splashart_orco, (100, 100))  # Tamaño pequeño para el splashart
-
-# Información de vida y XP para cada raza
-vida = 100
-xp = 0
+# Escalar las imágenes una sola vez, antes del ciclo principal
+bosque_imagen = pygame.transform.scale(bosque_imagen, (WIDTH, HEIGHT // 2))  # Bosque en la mitad superior
+papiro_imagen = pygame.transform.scale(papiro_imagen, (WIDTH, HEIGHT // 2))  # Papiro en la mitad inferior
 
 # Función para dividir el texto largo en varias líneas
 def dividir_texto(texto, ancho_maximo):
@@ -84,26 +76,14 @@ def mostrar_historia_con_imagen(texto):
 
     pygame.display.flip()
 
-# Función para mostrar la información del personaje (splashart, vida, xp)
-def mostrar_info_personaje(raza_seleccionada):
-    # Mostrar el splashart de la raza seleccionada
-    if raza_seleccionada == "Humano":
-        screen.blit(splashart_humano, (20, 20))
-    elif raza_seleccionada == "Elfo":
-        screen.blit(splashart_elfo, (20, 20))
-    elif raza_seleccionada == "Orco":
-        screen.blit(splashart_orco, (20, 20))
-    
-    # Mostrar vida y XP
-    vida_texto = font.render(f"Vida: {vida}", True, BLACK)
-    screen.blit(vida_texto, (20, 130))  # Mostrar vida debajo del splashart
-    
-    xp_texto = font.render(f"XP: {xp}", True, BLACK)
-    screen.blit(xp_texto, (20, 170))  # Mostrar XP debajo de la vida
+# Función para mostrar las opciones dentro del papiro
+def mostrar_opciones():
+    # Dibujar los botones de opciones
+    dibujar_boton(WIDTH // 4 - 100, HEIGHT - 80, 150, 40, "Pararse de mano")
+    dibujar_boton(3 * WIDTH // 4 - 100, HEIGHT - 80, 150, 40, "Rajar")
 
 # Función para gestionar el flujo de la historia
 def iniciar_juego():
-    raza_seleccionada = "Humano"  # Esto puede ser dinámico, dependiendo de la selección del jugador
     running = True
     while running:
         for event in pygame.event.get():
@@ -122,17 +102,13 @@ def iniciar_juego():
                     # Aquí puedes agregar la lógica para explorar el mundo
 
         # Texto para mostrar dentro del papiro
-        texto_historia = "Has llegado al Bosque Prohibido. El aire se siente denso y el peligro acecha en cada sombra. ¿Qué harás?"
+        texto_historia = "Has llegado al Bosque Prohibido. El aire se siente denso y el peligro acecha en cada sombra. De repente, cuando menos te lo esperas, se te planta un gil y te empieza a apurar"
 
         # Mostrar la historia con las imágenes de fondo
         mostrar_historia_con_imagen(texto_historia)
 
-        # Mostrar la información del personaje (splashart, vida, XP)
-        mostrar_info_personaje(raza_seleccionada)
-
         # Mostrar las opciones dentro del papiro
-        dibujar_boton(WIDTH // 4 - 100, HEIGHT - 80, 150, 40, "Combate")
-        dibujar_boton(3 * WIDTH // 4 - 100, HEIGHT - 80, 150, 40, "Explorar")
+        mostrar_opciones()
 
         pygame.display.flip()
 
