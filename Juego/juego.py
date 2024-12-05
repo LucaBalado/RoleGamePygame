@@ -1,118 +1,120 @@
 import pygame
+from razas import Humano, Elfo, Orco  # Las clases de las razas
+from clases import Guerrero, Hechicero  # Las clases del personaje
 import sys
 
-# Configuración inicial de Pygame
+# Inicialización de Pygame
 pygame.init()
 
-# Dimensiones de la pantalla
+# Configuración de la pantalla
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("El Destino del Reino")
+pygame.display.set_caption("Juego")
 
-# Colores y fuentes
+# Colores
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GRAY = (200, 200, 200)
+DARK_GRAY = (150, 150, 150)
+
+# Fuentes
 font = pygame.font.Font(None, 36)
 
-# Cargar imágenes
-bosque_imagen = pygame.image.load("assets/bosque.png")  # Imagen del bosque
-papiro_imagen = pygame.image.load("assets/papiro.png")  # Imagen del papiro
+# Cargar imágenes de splashart
+assets = {
+    "Humano": pygame.image.load("assets/Orco-Splashart.png"),
+    "Elfo": pygame.image.load("assets/Orco-Splashart.png"),
+    "Orco": pygame.image.load("assets/Orco-Splashart.png")
+}
 
-# Escalar las imágenes una sola vez, antes del ciclo principal
-bosque_imagen = pygame.transform.scale(bosque_imagen, (WIDTH, HEIGHT // 2))  # Bosque en la mitad superior
-papiro_imagen = pygame.transform.scale(papiro_imagen, (WIDTH, HEIGHT // 2))  # Papiro en la mitad inferior
+def mostrar_estado(raza, vida, xp):
+    vida_text = font.render(f"Vida: {vida}", True, BLACK)
+    screen.blit(vida_text, (20, HEIGHT - 120))
 
-# Función para dividir el texto largo en varias líneas
-def dividir_texto(texto, ancho_maximo):
-    lineas = []
-    palabras = texto.split(" ")
-    linea_actual = ""
-    
-    for palabra in palabras:
-        # Verifica si agregar la palabra a la línea actual excede el ancho máximo
-        if font.size(linea_actual + palabra)[0] <= ancho_maximo:
-            linea_actual += palabra + " "
-        else:
-            # Si excede el ancho máximo, agrega la línea y comienza una nueva línea
-            lineas.append(linea_actual)
-            linea_actual = palabra + " "
-    
-    # Asegurarse de agregar la última línea
-    if linea_actual:
-        lineas.append(linea_actual)
-    
-    return lineas
+    xp_text = font.render(f"XP: {xp}", True, BLACK)
+    screen.blit(xp_text, (20, HEIGHT - 80))
 
-# Función para dibujar un botón
-def dibujar_boton(x, y, ancho, alto, texto, color_base=(150, 150, 150), color_hover=(200, 200, 200)):
-    mouse_pos = pygame.mouse.get_pos()
-    color_boton = color_hover if (x < mouse_pos[0] < x + ancho and y < mouse_pos[1] < y + alto) else color_base
-    
-    # Dibujar el botón
-    pygame.draw.rect(screen, color_boton, (x, y, ancho, alto))
+    splashart = assets.get(raza.__class__.__name__, None)
+    if splashart:
+        splashart = pygame.transform.scale(splashart, (100, 100))  
+        screen.blit(splashart, (WIDTH - 120, 20))
+
+def boton(x, y, ancho, alto, texto, accion=None):
+    """Dibuja un botón y detecta si es clickeado."""
+    mouse = pygame.mouse.get_pos()
+    rect_color = GRAY if (x < mouse[0] < x + ancho and y < mouse[1] < y + alto) else DARK_GRAY
+
+    pygame.draw.rect(screen, rect_color, (x, y, ancho, alto))
     text = font.render(texto, True, BLACK)
     screen.blit(text, (x + (ancho - text.get_width()) // 2, y + (alto - text.get_height()) // 2))
 
-# Función para mostrar la pantalla dividida con texto en el papiro
-def mostrar_historia_con_imagen(texto):
-    # Llenar la pantalla con blanco
-    screen.fill(WHITE)
+    if pygame.mouse.get_pressed()[0]:
+        if x < mouse[0] < x + ancho and y < mouse[1] < y + alto:
+            if accion:
+                accion()
 
-    # Mostrar la imagen del bosque en la mitad superior
-    screen.blit(bosque_imagen, (0, 0))  # Bosque en la mitad superior
+def jugar(raza, clase):
+    personaje = clase
+    personaje.vida = 10 
+    personaje.xp = 0
 
-    # Mostrar la imagen del papiro en la mitad inferior
-    screen.blit(papiro_imagen, (0, HEIGHT // 2))  # Papiro en la mitad inferior
+    # Variables de la narrativa
+    historia = [
+        "Te encuentras en una taberna, charlando y bebiendo con tus tres amigos, cuando de repente",
+        "Un grupo de guardias reales irrumpen en el lugar exigiendo un grupo de aventureros temerarios",
+        "Ëllos, al ver que ustedes son los unicos que puden mantenerse en pie, se acercan hacia ustedes..."
+    ]
+    opciones = [
+        ("Ir a la ciudad", ir_a_ciudad),
+        ("Explorar el bosque", explorar_bosque)
+    ]
+    
+    decision_idx = 0  # Comienza con la primera parte de la historia
 
-    # Dividir el texto largo en líneas para que se ajuste dentro del papiro
-    lineas = dividir_texto(texto, WIDTH - 40)  # 40px de margen
-    y_offset = HEIGHT // 2 + 20  # Comienza a mostrar el texto en la parte inferior
-
-    # Dibujar las líneas de texto dentro del papiro
-    for linea in lineas:
-        story_text = font.render(linea, True, BLACK)
-        screen.blit(story_text, (20, y_offset))  # 20px de margen
-        y_offset += story_text.get_height() + 5  # Espaciado entre líneas
-
-    pygame.display.flip()
-
-# Función para mostrar las opciones dentro del papiro
-def mostrar_opciones():
-    # Dibujar los botones de opciones
-    dibujar_boton(WIDTH // 4 - 100, HEIGHT - 80, 150, 40, "Pararse de mano")
-    dibujar_boton(3 * WIDTH // 4 - 100, HEIGHT - 80, 150, 40, "Rajar")
-
-# Función para gestionar el flujo de la historia
-def iniciar_juego():
+    # Bucle principal del juego
     running = True
     while running:
+        screen.fill(WHITE)  # Limpiar pantalla
+
+        # Mostrar estado del personaje
+        mostrar_estado(raza, personaje.vida, personaje.xp)
+
+        # Mostrar el texto de la historia
+        historia_text = font.render(historia[decision_idx], True, BLACK)
+        screen.blit(historia_text, (WIDTH // 2 - historia_text.get_width() // 2, HEIGHT // 4))
+
+        # Dibujar los botones de decisiones
+        for i, (texto, accion) in enumerate(opciones):
+            boton(WIDTH // 2 - 150, HEIGHT // 2 + i * 60, 300, 50, texto, accion)
+
+        pygame.display.flip()  # Actualizar la pantalla
+
+        # Manejo de eventos
         for event in pygame.event.get():
-            # Cerrar el juego si el usuario hace clic en la X de la ventana
             if event.type == pygame.QUIT:
                 running = False
-            
-            # Comprobar si se hace clic en las opciones
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if WIDTH // 4 - 100 < event.pos[0] < WIDTH // 4 + 50 and HEIGHT - 80 < event.pos[1] < HEIGHT - 40:
-                    print("Elegiste Combate")
-                    # Aquí puedes agregar la lógica para iniciar el combate
-                    # Por ejemplo, importando y ejecutando el archivo combate.py
-                if 3 * WIDTH // 4 - 100 < event.pos[0] < 3 * WIDTH // 4 + 50 and HEIGHT - 80 < event.pos[1] < HEIGHT - 40:
-                    print("Elegiste Explorar")
-                    # Aquí puedes agregar la lógica para explorar el mundo
 
-        # Texto para mostrar dentro del papiro
-        texto_historia = "Has llegado al Bosque Prohibido. El aire se siente denso y el peligro acecha en cada sombra. De repente, cuando menos te lo esperas, se te planta un gil y te empieza a apurar"
+    pygame.quit()
+    sys.exit()
 
-        # Mostrar la historia con las imágenes de fondo
-        mostrar_historia_con_imagen(texto_historia)
+# Funciones para las decisiones
+def ir_a_ciudad():
+    print("El jugador decide ir a la ciudad.")
+    # Aquí agregas la lógica de lo que pasa cuando el jugador decide ir a la ciudad.
+    # Puedes cambiar la historia, la ubicación, o lo que desees.
 
-        # Mostrar las opciones dentro del papiro
-        mostrar_opciones()
+def explorar_bosque():
+    print("El jugador decide explorar el bosque.")
+    # Aquí agregas la lógica de lo que pasa cuando el jugador decide explorar el bosque.
+    # Puedes cambiar la historia, agregar combate o eventos.
 
-        pygame.display.flip()
+# Función para seleccionar la raza y clase
+def seleccionar_personaje():
 
-# Iniciar el juego
-iniciar_juego()
+    raza = Humano()  
+    clase = Guerrero()  
 
-pygame.quit()
+    jugar(raza, clase)
+
+if __name__ == "__main__":
+    seleccionar_personaje()
