@@ -1,7 +1,7 @@
 import razas
 class Guerrero:
-    def __init__(self, raza):
-        self.raza= raza
+    def __init__(self):
+        self.name= "Guerrero"
         self.ca = 14
         self.accion = ["Ataque Normal", "Ataque Doble"]
         self.accionadicional = ["Circulo de Defensa", "Aumentar Armadura"]
@@ -25,6 +25,7 @@ class Guerrero:
 
 class Hechicero:
     def __init__(self):
+        self.name="Hechicero"
         self.ca=10
         self.accion = ["Curación", "Bola de Fuego"]
         self.accionadicional = ["Aumentar Armadura", "Bendecir Jugador"]
