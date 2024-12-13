@@ -12,7 +12,7 @@ BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 DARK_GRAY = (150, 150, 150)
 
-font = pygame.font.Font(None, 22)  # Reducir aún más el tamaño de la fuente
+font = pygame.font.Font(None, 24) 
 
 # Cargar imágenes
 bosque_img = pygame.image.load("assets/bosque.png")
@@ -20,9 +20,9 @@ papiro_img = pygame.image.load("assets/papiro.png")
 
 # Historia
 historia = [
-    "Te encuentras en una taberna, charlando y bebiendo con tus tres amigos, cuando de repente...",
-    "Un grupo de guardias reales irrumpen en el lugar exigiendo un grupo de aventureros temerarios.",
-    "Ellos, al ver que ustedes son los únicos que pueden mantenerse en pie, se acercan hacia ustedes..."
+    "Te encuentras volviendo a la ciudad con tus 2 amigos, luego de una larga noche de aventura,",
+    "Cuando de repente ven una gran cantidad de humo saliendo de las profundidades del bosque.",
+    "Cada uno de ellos opinan algo distinto, por lo que la responsabilidad de elegir que hacer recae en ti."
 ]
 
 # Opciones de botones

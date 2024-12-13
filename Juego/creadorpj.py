@@ -104,8 +104,12 @@ def creacion_personaje():
         key = (razas[raza_idx].__class__.__name__, clases[clase_idx].__class__.__name__)
         if key in assets:
             image = assets[key]
-            screen.blit(image, (WIDTH // 2 - image.get_width() // 2, HEIGHT // 2 - image.get_height() // 2))
-        
+            # Escala la imagen a un tamaño mayor, por ejemplo, 1.5x su tamaño original
+            scaled_width = int(image.get_width() * 2)
+            scaled_height = int(image.get_height() * 2)
+            scaled_image = pygame.transform.scale(image, (scaled_width, scaled_height))
+            # Dibuja la imagen escalada en el centro
+            screen.blit(scaled_image, (WIDTH // 2 - scaled_width // 2, HEIGHT // 2 - scaled_height // 2))  
         # Verificar si el mouse está sobre el texto de la raza o la clase
         mouse_x, mouse_y = pygame.mouse.get_pos()
         raza_rect = raza_text.get_rect(center=(WIDTH // 2, 50))
