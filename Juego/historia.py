@@ -11,29 +11,29 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 DARK_GRAY = (150, 150, 150)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
 
 font = pygame.font.Font(None, 24) 
 
-# Cargar imágenes
 bosque_img = pygame.image.load("assets/bosque.png")
 papiro_img = pygame.image.load("assets/papiro.png")
+orco_img = pygame.image.load("assets/Orco-Splashart.png")
 
-# Historia
 historia = [
     "Te encuentras volviendo a la ciudad con tus 2 amigos, luego de una larga noche de aventura,",
     "Cuando de repente ven una gran cantidad de humo saliendo de las profundidades del bosque.",
-    "Cada uno de ellos opinan algo distinto, por lo que la responsabilidad de elegir que hacer recae en ti."
+    "Cada uno de ellos opinan algo distinto, por lo que la responsabilidad de elegir qué hacer recae en ti."
 ]
 
-# Opciones de botones
+
 opciones = [
     ("Ir a la ciudad", 'ir_a_ciudad'),
     ("Explorar el bosque", 'explorar_bosque')
 ]
 
-# Variable global para seguir el índice de la historia
-decision_idx = 0  
-
+decision_idx = 0
+vida_pj = 100  
 def boton(x, y, ancho, alto, texto, accion=None):
     """Dibuja un botón y detecta si es clickeado."""
     mouse = pygame.mouse.get_pos()
@@ -52,51 +52,54 @@ def mostrar_menu():
     """Muestra el menú con la opción de salir en la esquina superior izquierda."""
     boton(10, 10, 150, 40, "Salir", salir)
 
+def dibujar_estado_personaje():
+    """Dibuja la imagen del personaje y la barra de vida."""
+    orco_resized = pygame.transform.scale(orco_img, (100, 100))
+    screen.blit(orco_resized, (WIDTH - 120, 20))
+
+    barra_x = WIDTH - 140
+    barra_y = 130
+    barra_ancho = 100
+    barra_alto = 20
+
+    pygame.draw.rect(screen, DARK_GRAY, (barra_x, barra_y, barra_ancho, barra_alto))
+    vida_ancho = int((vida_pj / 100) * barra_ancho)
+    pygame.draw.rect(screen, GREEN if vida_pj > 30 else RED, (barra_x, barra_y, vida_ancho, barra_alto))
+
 def jugar():
     global decision_idx
 
     running = True
     while running:
-        screen.fill(WHITE)  # Rellenar con el color blanco para la parte de fondo
+        screen.fill(WHITE)
 
-        # Mostrar el menú de la esquina superior izquierda
-        
-
-        # Mostrar la imagen del bosque en la mitad superior
-        bosque_resized = pygame.transform.scale(bosque_img, (WIDTH, HEIGHT // 2))  # Redimensiona la imagen para que ocupe la mitad superior
+        bosque_resized = pygame.transform.scale(bosque_img, (WIDTH, HEIGHT // 2))
         screen.blit(bosque_resized, (0, 0))
 
-        # Mostrar la imagen del papiro en la mitad inferior
-        papiro_resized = pygame.transform.scale(papiro_img, (WIDTH, HEIGHT // 2))  # Redimensiona la imagen para que ocupe la mitad inferior
-        screen.blit(papiro_resized, (0, HEIGHT // 2))
 
-        # Mostrar el texto de la historia línea por línea
-        y_offset = HEIGHT // 8  # Ajuste la posición vertical del texto
+        papiro_resized = pygame.transform.scale(papiro_img, (WIDTH - 10, HEIGHT // 2 + 50))
+        papiro_x = (WIDTH - papiro_resized.get_width()) // 2
+        papiro_y = HEIGHT // 2 - 20
+        screen.blit(papiro_resized, (papiro_x, papiro_y))
+
+        
+        y_offset = papiro_y + 50 
         for i, line in enumerate(historia[:decision_idx + 1]):
             historia_text = font.render(line, True, BLACK)
-            screen.blit(historia_text, (WIDTH // 2 - historia_text.get_width() // 2, y_offset + i * 25))  # Reducir el espacio entre líneas
-
-        # Mostrar opciones al final del último párrafo
+            screen.blit(historia_text, (papiro_x, y_offset + i * 30))  
         if decision_idx == len(historia) - 1:
             for i, (texto, accion) in enumerate(opciones):
-                boton(WIDTH // 2 - 150, HEIGHT // 2 + 160 + i * 60, 300, 50, texto, globals()[accion])
-        
-        mostrar_menu()
+                boton(papiro_x + 50, papiro_y + 200 + i * 60, papiro_resized.get_width() - 100, 50, texto, globals()[accion])
 
-        pygame.display.flip()  # Actualizar la pantalla
+        dibujar_estado_personaje()
+
+        mostrar_menu()
+        pygame.display.flip()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if decision_idx == len(historia) - 1:
-                    # Si el índice es el último, se muestran los botones
-                    for i, (texto, accion) in enumerate(opciones):
-                        if WIDTH // 2 - 150 < pygame.mouse.get_pos()[0] < WIDTH // 2 + 150 and HEIGHT // 2 + 160 + i * 60 < pygame.mouse.get_pos()[1] < HEIGHT // 2 + 160 + i * 60 + 50:
-                            globals()[accion]()  # Llama a la acción correspondiente
-
-        # Si el jugador ha llegado al final de la historia, podemos pasar a la siguiente parte
         if decision_idx < len(historia) - 1:
             decision_idx += 1
 
@@ -106,12 +109,12 @@ def jugar():
 def ir_a_ciudad():
     global decision_idx
     print("El jugador decide ir a la ciudad.")
-    decision_idx = 0  # Vuelves al primer párrafo o a donde quieras continuar
+    decision_idx = 0
 
 def explorar_bosque():
     global decision_idx
     print("El jugador decide explorar el bosque.")
-    decision_idx = 0  # Vuelves al primer párrafo o a donde quieras continuar
+    decision_idx = 0
 
 def salir():
     """Función para salir del juego."""
