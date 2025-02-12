@@ -1,10 +1,11 @@
 import razas
 class Guerrero:
     def __init__(self):
-        self.name= "Guerrero"
+        self.nombre= "Guerrero"
         self.ca = 14
         self.accion = ["Ataque Normal", "Ataque Doble"]
-        self.accionadicional = ["Circulo de Defensa", "Aumentar Armadura"]
+        self.acciónadicional = ["Circulo de Defensa", "Aumentar Armadura"]
+
 
     def realizar_accion(self, accion_idx):
         if accion_idx == 0:
@@ -13,6 +14,7 @@ class Guerrero:
             return "El Guerrero realiza otro ataque doble"
         else:
             return "Acción no válida"
+
 
     def realizar_accion_bonus(self, bonus_idx):
         if bonus_idx == 0:
@@ -23,12 +25,15 @@ class Guerrero:
             return "Acción bonus no válida"
 
 
+
+
 class Hechicero:
     def __init__(self):
-        self.name="Hechicero"
+        self.nombre="Hechicero"
         self.ca=10
-        self.accion = ["Curación", "Bola de Fuego"]
-        self.accionadicional = ["Aumentar Armadura", "Bendecir Jugador"]
+        self.accion = ["Tiro Con Arco", "Bola de Fuego"]
+        self.accionadicional = ["Aumentar Armadura", "Curación"]
+
 
     def realizar_accion(self, accion_idx):
         if accion_idx == 0:
@@ -37,6 +42,7 @@ class Hechicero:
             return "El Hechicero lanza un ataque de fuego"
         else:
             return "Acción no válida"
+
 
     def realizar_accion_bonus(self, bonus_idx):
         if bonus_idx == 0:

@@ -1,37 +1,63 @@
-class PersonajeBase:
-    def __init__(self, x, y, width=44, height=80):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-        self.vida = 0
-        self.velocity = 0
-        self.fuerza = 0
-        self.destreza = 0
-        self.habilidades = []
-        self.raza = None
-        self.clase = None
+from razas import Humano, Elfo, Orco
+from clases import Guerrero, Hechicero
+import pygame
 
-    def configurar_personaje(self, raza, clase):
-        """Configura los atributos del personaje 
-        según la raza y la clase."""
-        self.raza = raza
-        self.clase = clase
-        self.vida = raza.vida
-        self.velocity = raza.velocity
-        self.fuerza = raza.fuerza
-        self.destreza = raza.destreza
-        self.habilidades.extend(clase.habilidades)
 
-    def calcular_dano(self):
-        """Calcula el daño usando la clase asignada."""
-        if self.clase:
-            return self.clase.calcular_dano(self.fuerza, self.destreza)
-        else:
-            return 0
+razas = {
+    "Humano": Humano(),
+    "Elfo": Elfo(),
+    "Orco": Orco()
+}
 
-    def mostrar_info(self):
-        """Muestra información del personaje."""
-        return f"Raza: {self.raza.__class__.__name__}, Clase: {self.clase.__class__.__name__}, " \
-               f"Vida: {self.vida}, Fuerza: {self.fuerza}, Destreza: {self.destreza}, " \
-               f"Habilidades: {', '.join(self.habilidades)}"
+
+clases = {
+    "Guerrero": Guerrero(),
+    "Hechicero": Hechicero()
+}
+
+
+def guardar_personaje(raza, clase):
+    elpersonaje = {
+        "Raza": raza,
+        "Clase": clase
+    }
+
+
+
+
+def nuevo_personaje(raza_seleccionada, clase_seleccionada):
+    """Crea un personaje combinando raza y clase seleccionadas."""
+    if raza_seleccionada not in razas or clase_seleccionada not in clases:
+        raise ValueError("Raza o clase seleccionada no válida.")
+
+
+    raza = razas[raza_seleccionada]
+    clase = clases[clase_seleccionada]
+
+
+    personaje = {
+        "nombre": "Nuevo Personaje",
+        "raza": raza.nombre,
+        "clase": clase.nombre,
+        "fuerza": raza.fuerza,
+        "sabiduria": raza.sabiduria,
+        "destreza": raza.destreza,
+        "ca": clase.ca,
+        "vida": raza.vida,
+        "acciones": clase.accion,
+        "acciones_bonus": clase.accionadicional,
+        "posicion": 0
+    }
+
+
+    return personaje
+
+
+if __name__ == "__main__":
+    personaje = nuevo_personaje("Elfo", "Guerrero")
+    print(personaje)
+
+
+
+
+
