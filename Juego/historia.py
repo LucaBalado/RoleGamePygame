@@ -5,7 +5,7 @@ from combate import *
 
 
 
-pygame.init()
+#pygame.init()
 
 
 WIDTH, HEIGHT = 800, 600
@@ -21,9 +21,7 @@ DARK_GRAY = (150, 150, 150)
 
 font = pygame.font.Font(None, 24)
 
-
 running = True
-
 
 bosque_fondo = pygame.image.load("assets/bosque.png")
 bosque_fondo = pygame.transform.scale(bosque_fondo, (WIDTH, HEIGHT // 2))
@@ -40,215 +38,151 @@ humano_img = pygame.image.load("assets/Humanosplashart.png")
 elfo_img = pygame.image.load("assets/Elfosplashart.png")
 
 
-ubicacion_actual = "bosque"
+
+class Historia:
+    def __init__(self, juego):
+        self.juego = juego
+        self.running=True
+        self.ubicacion_actual = "bosque"
+
+    def ajustar_texto(self, texto, ancho_max):
+        palabras = texto.split(' ')
+        lineas = []
+        linea_actual = ""
+
+        for palabra in palabras:
+            prueba_linea = f"{linea_actual} {palabra}".strip()
+            if font.size(prueba_linea)[0] > ancho_max:
+                lineas.append(linea_actual)
+                linea_actual = palabra
+            else:
+                linea_actual = prueba_linea
 
 
-def ajustar_texto(texto, ancho_max):
-    palabras = texto.split(' ')
-    lineas = []
-    linea_actual = ""
-
-
-    for palabra in palabras:
-        prueba_linea = f"{linea_actual} {palabra}".strip()
-        if font.size(prueba_linea)[0] > ancho_max:
+        if linea_actual:
             lineas.append(linea_actual)
-            linea_actual = palabra
+
+
+        return lineas
+
+    def dibujar_estado_personaje(self):
+
+        if self.juego.raza == "Orco":
+            orco_resized = pygame.transform.scale(orco_img, (100, 100))
+            screen.blit(orco_resized, (WIDTH - 120, 20))
+        elif self.juego.raza == "Humano":
+            humano_resized = pygame.transform.scale(humano_img, (100, 100))
+            screen.blit(humano_resized, (WIDTH - 120, 20))
+        elif self.juego.raza == "Elfo":
+            elfo_resized = pygame.transform.scale(elfo_img, (100, 100))
+            screen.blit(elfo_resized, (WIDTH - 120, 20))
+
+    def mostrar_texto(self,texto, x, y, ancho_max):
+        y_offset = 0
+        for linea in self.ajustar_texto(texto, ancho_max):
+            render = font.render(linea, True, BLACK)
+            screen.blit(render, (x, y + y_offset))
+            y_offset += render.get_height() + 5
+    def inicio(self):
+        self.ubicacion_actual = "bosque"
+        self.texto= [
+                "Mientras viajan por el camino principal, tu grupo de aventureros ve una columna de humo elevándose desde el bosque cercano.",
+                "Algo no parece normal. Podría ser una fogata… o una señal de peligro.",
+                "Deciden discutir qué hacer a continuación."
+            ]
+        self.botones = [
+                ("Adentrarse en el bosque", self.adentrarse_bosque),
+                ("Volver a la ciudad por ayuda", self.volver_ciudad)
+            ]
+
+
+    def adentrarse_bosque(self):
+        self.ubicacion_actual = "bosque"
+        self.texto= [
+                "Deciden no perder tiempo y avanzan rápidamente hacia la fuente del humo.",
+                "A medida que se acercan, el olor a madera quemada llena el aire y el resplandor de las llamas se vuelve visible a través de los árboles.",
+                "No tardan en descubrir la fuente del humo…"
+            ]
+        self.botones= [("Seguir adelante", self.descubrir_fuego)]
+
+
+    def volver_ciudad(self):
+        self.ubicacion_actual = "ciudad"
+        self.texto= [
+                "Deciden que es más prudente avisar a las autoridades de la ciudad antes de investigar.",
+                "Sin embargo, en el camino de regreso, se cruzan con un aldeano herido que tropieza fuera del bosque, pidiendo ayuda.",
+                "No pueden ignorarlo y deciden acompañarlo de vuelta a la zona del incendio."
+            ]
+        self.botones= [("Entrar al bosque", self.descubrir_fuego)]
+
+
+    def descubrir_fuego(self):
+        self.ubicacion_actual = "noche"
+        self.texto= [
+                "Finalmente, cuando cae la noche, logran llegan al claro donde el humo se eleva. Un campamento ha sido destruido, las tiendas aún arden.",
+                "Desde dentro del bosque un grupo de bandidos se acercan y claramente tienen malas intenciones.",
+                "¡Rapido! Decide que hacer"
+            ]
+        self.botones = [("huir", self.huir),
+                        ("pelear", self.pelear)]
+
+
+    def huir(self):
+        self.texto = ["huiste.", "Fin de la historia."],
+        self.botones = []
+    
+    def pelear(self):
+        global running
+        combate = Combate("assets/peleabosque.png", f"assets/sprites/{self.juego.raza.lower()}-{self.juego.clase.lower()}/neutral.png")
+        while running:
+            combate.main()
+
+
+
+
+    def dibujar_escena(self):
+        screen.blit(papiro_fondo, (0, HEIGHT // 2))
+        if self.ubicacion_actual == "bosque":
+            screen.blit(bosque_fondo, (0, 0))
+        elif self.ubicacion_actual == "noche":
+            screen.blit(noche_fondo, (0, 0))
         else:
-            linea_actual = prueba_linea
+            screen.blit(ciudad_fondo, (0, 0))
+            
 
 
-    if linea_actual:
-        lineas.append(linea_actual)
+        self.mostrar_texto("\n".join(self.texto), 20, HEIGHT // 2 + 20, WIDTH - 40)
 
-
-    return lineas
-
-
-
-
-def salir():
-    pygame.quit()
-    sys.exit()
-
-
-def mostrar_menu():
-    boton(10, 10, 150, 40, "Salir", salir)
-
-
-
-
-def dibujar_estado_personaje():
-    from creadorpj import guardar_actual
-   
-    raza_actual, _ = guardar_actual()
-
-
-    if raza_actual == "Orco":
-        orco_resized = pygame.transform.scale(orco_img, (100, 100))
-        screen.blit(orco_resized, (WIDTH - 120, 20))
-    elif raza_actual == "Humano":
-        humano_resized = pygame.transform.scale(humano_img, (100, 100))
-        screen.blit(humano_resized, (WIDTH - 120, 20))
-    elif raza_actual == "Elfo":
-        elfo_resized = pygame.transform.scale(elfo_img, (100, 100))
-        screen.blit(elfo_resized, (WIDTH - 120, 20))
-
-
-
-
-
-
-
-
-def mostrar_texto(texto, x, y, ancho_max):
-    y_offset = 0
-    for linea in ajustar_texto(texto, ancho_max):
-        render = font.render(linea, True, BLACK)
-        screen.blit(render, (x, y + y_offset))
-        y_offset += render.get_height() + 5
-
-
-
-
-def inicio():
-    global ubicacion_actual
-    ubicacion_actual = "bosque"
-    return {
-        "texto": [
-            "Mientras viajan por el camino principal, tu grupo de aventureros ve una columna de humo elevándose desde el bosque cercano.",
-            "Algo no parece normal. Podría ser una fogata… o una señal de peligro.",
-            "Deciden discutir qué hacer a continuación."
-        ],
-        "botones": [
-            ("Adentrarse en el bosque", adentrarse_bosque),
-            ("Volver a la ciudad por ayuda", volver_ciudad)
-        ]
-    }
-
-
-def adentrarse_bosque():
-    global ubicacion_actual
-    ubicacion_actual = "bosque"
-    return {
-        "texto": [
-            "Deciden no perder tiempo y avanzan rápidamente hacia la fuente del humo.",
-            "A medida que se acercan, el olor a madera quemada llena el aire y el resplandor de las llamas se vuelve visible a través de los árboles.",
-            "No tardan en descubrir la fuente del humo…"
-        ],
-        "botones": [("Seguir adelante", descubrir_fuego)]
-    }
-
-
-def volver_ciudad():
-    global ubicacion_actual
-    ubicacion_actual = "ciudad"
-    return {
-        "texto": [
-            "Deciden que es más prudente avisar a las autoridades de la ciudad antes de investigar.",
-            "Sin embargo, en el camino de regreso, se cruzan con un aldeano herido que tropieza fuera del bosque, pidiendo ayuda.",
-            "No pueden ignorarlo y deciden acompañarlo de vuelta a la zona del incendio."
-        ],
-        "botones": [("Entrar al bosque", descubrir_fuego)]
-    }
-
-
-def descubrir_fuego():
-    global ubicacion_actual
-    ubicacion_actual = "noche"
-    return {
-        "texto": [
-            "Finalmente, cuando cae la noche, logran llegan al claro donde el humo se eleva. Un campamento ha sido destruido, las tiendas aún arden.",
-            "Desde dentro del bosque un grupo de bandidos se acercan y claramente tienen malas intenciones.",
-            "¡Rapido! Decide que hacer"
-        ],
-        "botones": [("huir", huir),
-                    ("pelear", pelear)]
-    }
-
-
-def huir():
-    return {
-        "texto": ["huiste.", "Fin de la historia."],
-        "botones": []
-    }
-   
-def pelear():
-    global running
-    while running:
-        Combate.main()
-
-
-
-
-def dibujar_escena(escena):
-    if ubicacion_actual == "bosque":
-        screen.blit(bosque_fondo, (0, 0))
-    elif ubicacion_actual == "noche":
-        screen.blit(noche_fondo, (0, 0))
-    else:
-        screen.blit(ciudad_fondo, (0, 0))
-    screen.blit(papiro_fondo, (0, HEIGHT // 2))
-
-
-    mostrar_texto("\n".join(escena["texto"]), 20, HEIGHT // 2 + 20, WIDTH - 40)
-
-
-    y_boton = HEIGHT - 120
-    for i, (texto, accion) in enumerate(escena["botones"]):
-        x_boton = 50 + i * 400
-        boton(x_boton, y_boton, 300, 40, texto, accion)
-
-
-
-
-def boton(x, y, ancho, alto, texto, accion=None):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-    rect_color = GRAY if x < mouse[0] < x + ancho and y < mouse[1] < y + alto else DARK_GRAY
-
-
-    pygame.draw.rect(screen, rect_color, (x, y, ancho, alto))
-    text = font.render(texto, True, BLACK)
-    screen.blit(text, (x + (ancho - text.get_width()) // 2, y + (alto - text.get_height()) // 2))
-
-
-    if click[0] and x < mouse[0] < x + ancho and y < mouse[1] < y + alto:
-        if accion:
-            pygame.time.delay(200)
-            global escena_actual
-            escena_actual = accion()
-
-
-
-
-def jugar():
-    global escena_actual
-    escena_actual = inicio()
-
-
-    running = True
-    while running:
+        evento = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                self.juego.running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                evento = event
+
+        y_boton = HEIGHT - 120
+        for i, (texto, accion) in enumerate(self.botones):
+            x_boton = 50 + i * 400
+            self.juego.boton(x_boton, y_boton, 300, 40, texto, accion, evento)
+
+    def main(self):
+            self.running=True
+            self.inicio()
+            while self.running:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        self.running = False
 
 
-        screen.fill(WHITE)
-       
-        dibujar_escena(escena_actual)
-        dibujar_estado_personaje()
-        pygame.display.flip()
+                screen.fill(WHITE)
+            
+                self.dibujar_escena()
+                self.dibujar_estado_personaje()
+                pygame.display.flip()
 
 
-    pygame.quit()
-    sys.exit()
-
-
-
-
-if __name__ == "__main__":
-    jugar()
+            pygame.quit()
+            sys.exit()
 
 
 

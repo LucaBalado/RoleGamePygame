@@ -1,8 +1,5 @@
 import pygame
 from pygame.locals import *
-from creadorpj import personaje_seleccionado
-import datos_personaje
-
 
 
 
@@ -15,23 +12,6 @@ PORCENTAJE_OCUPACION = 0.7
 TAMANO_BOTON = (150, 50)  
 COLOR_FONDO_SUBMENU=(255,255,255)
 rangomover= 3
-def obtener_datos_personaje():
-    import datos_personaje
-    # Es buena práctica verificar que ya se haya asignado la selección
-    if datos_personaje.personaje_seleccionado is None:
-        raise ValueError("El personaje no ha sido creado aún.")
-    return datos_personaje.personaje_seleccionado["raza"], datos_personaje.personaje_seleccionado["clase"]
-
-
-# Justo antes de crear la instancia de Combate:
-raza_actual, clase_actual = obtener_datos_personaje()
-
-
-
-
-
-
-
 
 class Combate:
     def __init__(self, fondo_path, sprite_path):
@@ -68,7 +48,7 @@ class Combate:
         self.turno_enemigo = False
         self.mostrar_submenu = False
         self.submenu_tipo = None
-        if clase_actual == "Hechicero":
+        if self.juego.clase == "Hechicero":
             self.acciones = {
                'accion': ["Tiro Con Arco", "Bola de Fuego"],
                'accion_adicional': ["Aumentar Armadura", "Curación"]
@@ -82,7 +62,6 @@ class Combate:
         self.accion_utilizada = False
         self.accion_adicional_utilizada = False                      
        
-
 
     def crear_cuadrillas(self):
         """Crea las cuadrillas en el centro, omitiendo la primera fila."""
@@ -373,21 +352,3 @@ class Combate:
             self.manejar_eventos()
             self.dibujar_escenario()
             pygame.display.update()
-if raza_actual == "Orco" and clase_actual == "Hechicero":
-    combate = Combate("assets/peleabosque.png", "assets/sprites/orco-hechicero/neutral.png")
-elif raza_actual == "Orco" and clase_actual == "Guerrero":
-    combate = Combate("assets/peleabosque.png", "assets/sprites/orco-guerrero/neutral.png")
-   
-elif raza_actual == "Elfo" and clase_actual == "Hechicero":
-    combate = Combate("assets/peleabosque.png", "assets/sprites/elfo-hechicero/neutral.png")
-elif raza_actual == "Elfo" and clase_actual == "Guerrero":
-    combate = Combate("assets/peleabosque.png", "assets/sprites/elfo-guerrero/neutral.png")
-
-
-elif raza_actual == "Humano" and clase_actual == "Hechicero":
-    combate = Combate("assets/peleabosque.png", "assets/sprites/humano-hechicero/neutral.png")
-else:
-    combate = Combate("assets/peleabosque.png", "assets/sprites/humano-hechicero/neutral.png")
-   
-   
-combate.main()
