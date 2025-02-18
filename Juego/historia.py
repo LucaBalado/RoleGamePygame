@@ -64,9 +64,12 @@ class Historia:
 
 
         return lineas
+    
+    def cerrar(self):
+        self.running=False
+        self.juego.running=False
 
     def dibujar_estado_personaje(self):
-
         if self.juego.raza == "Orco":
             orco_resized = pygame.transform.scale(orco_img, (100, 100))
             screen.blit(orco_resized, (WIDTH - 120, 20))
@@ -83,6 +86,7 @@ class Historia:
             render = font.render(linea, True, BLACK)
             screen.blit(render, (x, y + y_offset))
             y_offset += render.get_height() + 5
+            
     def inicio(self):
         self.ubicacion_actual = "bosque"
         self.texto= [
@@ -129,11 +133,12 @@ class Historia:
 
     def huir(self):
         self.texto = ["huiste.", "Fin de la historia."],
-        self.botones = []
+        self.botones = ["Terminar juego",lambda: self.cerrar, print("terminaste el juego")]
     
     def pelear(self):
         global running
-        combate = Combate("assets/peleabosque.png", f"assets/sprites/{self.juego.raza.lower()}-{self.juego.clase.lower()}/neutral.png")
+        
+        combate = Pelea("assets/peleabosque.png", f"/assets/sprites/{self.juego.raza.lower()}-{self.juego.clase.lower()}/neutral.png")
         while running:
             combate.main()
 

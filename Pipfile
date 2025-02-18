@@ -5,12 +5,14 @@ name = "pypi"
 
 [packages]
 pygame = "*"
+click = "*"
 
 [dev-packages]
 
 [scripts]
-start = "python ./Juego/creadorpj.py"
-historia = "python ./Juego/historia.py"
+start = "python ./Juego/juego.py juego"
+creador = "python ./Juego/creadorpj.py creador"
+combate= "python Juego/combate.py"
 
 [requires]
 python_version = "3.10"

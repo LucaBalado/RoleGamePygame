@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
-
+import pathlib as pl
+import click
 
 
 ANCHO, ALTO = 1250, 700
@@ -13,14 +14,18 @@ TAMANO_BOTON = (150, 50)
 COLOR_FONDO_SUBMENU=(255,255,255)
 rangomover= 3
 
-class Combate:
+class Pelea:
     def __init__(self, fondo_path, sprite_path):
         pygame.init()
         self.screen = pygame.display.set_mode((ANCHO, ALTO))
         pygame.display.set_caption("Campo de Batalla")
-       
+        fondo = pl.Path(fondo_path)
+        fondo.resolve()
+        sprite = pl.Path(sprite_path)
+        sprite.resolve()
         try:
-            self.fondo = pygame.image.load(fondo_path)
+
+            self.fondo = pygame.image.load(fondo)
             self.fondo = pygame.transform.scale(self.fondo, (ANCHO, ALTO))
         except pygame.error as e:
             print(f"Error cargando la imagen de fondo: {e}")
@@ -28,7 +33,7 @@ class Combate:
 
 
         try:
-            self.sprite_orco = pygame.image.load(sprite_path)
+            self.sprite_orco = pygame.image.load(sprite)
             self.sprite_orco = pygame.transform.scale(self.sprite_orco, (TAMANIO_CUADRILLA, TAMANIO_CUADRILLA))
         except pygame.error as e:
             print(f"Error cargando la imagen del sprite: {e}")
@@ -64,7 +69,6 @@ class Combate:
        
 
     def crear_cuadrillas(self):
-        """Crea las cuadrillas en el centro, omitiendo la primera fila."""
         filas = int((ALTO * PORCENTAJE_OCUPACION) // TAMANIO_CUADRILLA)
         columnas = int((ANCHO * PORCENTAJE_OCUPACION) // TAMANIO_CUADRILLA)
 
@@ -82,12 +86,10 @@ class Combate:
 
 
     def crear_botones(self):
-        """Crea los botones en una fila horizontal."""
-        boton_espaciado = 20  # Espacio entre los botones
-        x_inicial = (ANCHO - (4 * TAMANO_BOTON[0] + 3 * boton_espaciado)) // 2  # Centrado en la pantalla
+        boton_espaciado = 20
+        x_inicial = (ANCHO - (4 * TAMANO_BOTON[0] + 3 * boton_espaciado)) // 2
 
 
-        # Botones alineados horizontalmente
         self.botones.append(pygame.Rect(x_inicial, ALTO - 100, *TAMANO_BOTON))  # Acción
         self.botones.append(pygame.Rect(x_inicial + TAMANO_BOTON[0] + boton_espaciado, ALTO - 100, *TAMANO_BOTON))  # Acción Adicional
         self.botones.append(pygame.Rect(x_inicial + 2 * (TAMANO_BOTON[0] + boton_espaciado), ALTO - 100, *TAMANO_BOTON))  # Mover
@@ -97,46 +99,28 @@ class Combate:
 
 
     def dibujar_escenario(self):
-        """Dibuja el fondo, cuadrillas y botones."""
         self.screen.blit(self.fondo, (0, 0))
 
 
-        # Dibujar cuadrícula
         for cuad in self.cuadras:
             pygame.draw.rect(self.screen, COLOR_CUADRILLA,
                              (*cuad, TAMANIO_CUADRILLA, TAMANIO_CUADRILLA), 1)
 
 
-        # Dibujar el sprite del orco hechicero en la posición actual
         orco_pos_x = self.offset_x + self.orco_pos[0] * TAMANIO_CUADRILLA
         orco_pos_y = self.offset_y + self.orco_pos[1] * TAMANIO_CUADRILLA
         self.screen.blit(self.sprite_orco, (orco_pos_x, orco_pos_y))
 
 
-        # Dibujar los botones
         self.dibujar_botones()
 
 
-        # Mostrar las casillas de movimiento si está activo
         if self.movimiento_activo:
             self.dibujar_movimiento()
 
 
-    def dibujar_botones(self):
-        """Dibuja los botones de acción, adicional y movimiento."""
-        for boton in self.botones:
-            pygame.draw.rect(self.screen, COLOR_BTN, boton)
-            pygame.draw.rect(self.screen, (0, 0, 0), boton, 2)
-        self.dibujar_texto("Acción", self.botones[0])
-        self.dibujar_texto("Adicional", self.botones[1])
-        self.dibujar_texto("Movimiento", self.botones[2])
-        self.dibujar_texto("Terminar Turno", self.botones[3])
-        if self.mostrar_submenu:
-            self.dibujar_submenu()  
-
 
     def dibujar_texto(self, texto, rect):
-        """Dibuja texto dentro de un botón."""
         font = pygame.font.Font(None, 30)
         text_surface = font.render(texto, True, (0, 0, 0))
         text_rect = text_surface.get_rect(center=rect.center)
@@ -144,68 +128,56 @@ class Combate:
 
 
     def dibujar_movimiento(self):
-        """Dibuja las casillas a las cuales el personaje puede moverse, respetando los límites del mapa."""
         orco_pos_x = self.offset_x + self.orco_pos[0] * TAMANIO_CUADRILLA
         orco_pos_y = self.offset_y + self.orco_pos[1] * TAMANIO_CUADRILLA
 
 
-        # Limpiar las casillas anteriores de movimiento
         self.casillas_movimiento.clear()
 
 
         for y in range(-self.radio_movimiento, self.radio_movimiento + 1):
             for x in range(-self.radio_movimiento, self.radio_movimiento + 1):
                 if abs(x) + abs(y) <= self.radio_movimiento:
-                    # Calcular la posición de la casilla
                     casilla_x = self.orco_pos[0] + x
                     casilla_y = self.orco_pos[1] + y
 
 
-                    # Verificar si la casilla está dentro de los límites del mapa
                     if 0 <= casilla_x < len(self.cuadras) // 10 and 1 <= casilla_y < len(self.cuadras) // 10:
-                        # Evitar dibujar el movimiento en la casilla donde está el jugador
                         if x == 0 and y == 0:
                             continue
                        
-                        # Añadir casilla a la lista de movimiento
                         self.casillas_movimiento.append((casilla_x, casilla_y))
 
 
-                        # Crear una superficie semi-translúcida para la casilla
                         movimiento_surface = pygame.Surface((TAMANIO_CUADRILLA, TAMANIO_CUADRILLA))
                         movimiento_surface.set_alpha(100)  # 0 es completamente transparente, 255 es opaco
                         movimiento_surface.fill((0, 0, 255))  # Color azul
 
 
-                        # Dibujar la superficie semi-translúcida sobre la casilla
                         casilla_x_pos = self.offset_x + casilla_x * TAMANIO_CUADRILLA
                         casilla_y_pos = self.offset_y + casilla_y * TAMANIO_CUADRILLA
                         self.screen.blit(movimiento_surface, (casilla_x_pos, casilla_y_pos))
 
 
     def mover_orco(self, x, y):
-        """Mover al orco a una nueva posición y actualizar el rango de movimiento."""
-        # Calcular la distancia desde la posición original
         distancia = abs(x - self.orco_pos[0]) + abs(y - self.orco_pos[1])
 
 
         if distancia <= self.radio_movimiento:
-            # Mover al orco
             self.orco_pos = (x, y)
 
 
-            # Reducir el rango de movimiento según la distancia
             self.radio_movimiento -= distancia
 
 
             if self.radio_movimiento <= 0:
-                self.movimiento_activo = False  # Terminar el movimiento si ya no se puede mover más
+                self.movimiento_activo = False 
                 print(f"Rango de movimiento agotado. Movimientos restantes: {self.radio_movimiento}")
 
 
     def terminar_turno(self):
         """Restablecer el rango de movimiento al final del turno."""
-        self.radio_movimiento = rangomover  # Restablecer el rango de movimiento
+        self.radio_movimiento = rangomover
         self.movimiento_activo = False
         print("Turno terminado, rango de movimiento restaurado.")
 
@@ -214,7 +186,7 @@ class Combate:
         """Inicia el turno del jugador o enemigo."""
         self.turno_jugador = True
         self.turno_enemigo = False
-        self.movimiento_activo = False  # Desactivar el movimiento al inicio
+        self.movimiento_activo = False 
        
     def activar_submenu(self, tipo):
        if self.submenu_tipo == tipo:
@@ -238,7 +210,6 @@ class Combate:
 
 
     def dibujar_submenu(self):
-        # Fondo del submenú
         submenu_width = 200
         submenu_height = 100 + len(self.submenu_opciones) * 40
         submenu_rect = pygame.Rect((ANCHO - submenu_width) // 2, (ALTO - submenu_height) // 2, submenu_width, submenu_height)
@@ -246,8 +217,6 @@ class Combate:
 
 
 
-
-        # Opciones del submenú
         for i, opcion in enumerate(self.submenu_opciones):
             y_offset = (i + 1) * 40
             opcion_rect = pygame.Rect(submenu_rect.x + 10, submenu_rect.y + y_offset, submenu_width - 20, 30)
@@ -317,7 +286,6 @@ class Combate:
                    
 
 
-                # Verificar si se hizo clic en una casilla de movimiento
                 if self.movimiento_activo:
                     for casilla in self.casillas_movimiento:
                         casilla_x, casilla_y = casilla
@@ -329,7 +297,6 @@ class Combate:
                             break
 
 
-                # Si el submenú está abierto, verificar si se hizo clic en las opciones dentro de él
                 if self.mostrar_submenu:
                     submenu_rect = pygame.Rect((ANCHO - 200) // 2, (ALTO - 100 - len(self.submenu_opciones) * 40) // 2, 200, 100 + len(self.submenu_opciones) * 40)
                     for i, opcion in enumerate(self.submenu_opciones):
@@ -339,15 +306,9 @@ class Combate:
                             self.seleccionar_accion(opcion)
                             break
 
-
-                       
-
-
     def main(self):
         self.crear_cuadrillas()
         self.crear_botones()
-
-
         while True:
             self.manejar_eventos()
             self.dibujar_escenario()

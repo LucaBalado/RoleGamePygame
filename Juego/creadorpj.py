@@ -94,20 +94,10 @@ class Creacion:
     def guardar_actual(self): 
         self.juego.raza = razas[raza_idx]
         self.juego.clase = clases[clase_idx]
-        #guardar_personaje(raza, clase)
         self.juego.personaje_seleccionado = {"raza": self.juego.raza, "clase": self.juego.clase}
         print("Guardado:", self.juego.personaje_seleccionado)
-        # try:
-        #  raise Exception("a")
-        # except Exception:
-        #     print(traceback.format_stack())
         return self.juego.raza, self.juego.clase
 
     def continuar(self):
         self.guardar_actual()
         self.running=False
-
-
-
-
-
