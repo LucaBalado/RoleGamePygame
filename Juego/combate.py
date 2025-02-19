@@ -89,7 +89,7 @@ class Pelea:
         x_inicial = (ANCHO - (4 * TAMANO_BOTON[0] + 3 * boton_espaciado)) // 2
 
 
-        self.botones.append(pygame.Rect(x_inicial, ALTO - 100, *TAMANO_BOTON))  # Acción
+        self.botones.append(pygame.Rect(x_inicial, ALTO - 100, *TAMANO_BOTON)) 
         self.botones.append(pygame.Rect(x_inicial + TAMANO_BOTON[0] + boton_espaciado, ALTO - 100, *TAMANO_BOTON))  # Acción Adicional
         self.botones.append(pygame.Rect(x_inicial + 2 * (TAMANO_BOTON[0] + boton_espaciado), ALTO - 100, *TAMANO_BOTON))  # Mover
         self.botones.append(pygame.Rect(x_inicial + 3 * (TAMANO_BOTON[0] + boton_espaciado), ALTO - 100, *TAMANO_BOTON))  # Terminar Turno
@@ -109,9 +109,22 @@ class Pelea:
         orco_pos_x = self.offset_x + self.orco_pos[0] * TAMANIO_CUADRILLA
         orco_pos_y = self.offset_y + self.orco_pos[1] * TAMANIO_CUADRILLA
         self.screen.blit(self.sprite_orco, (orco_pos_x, orco_pos_y))
-        self.crear_botones()
+        self.dibujar_botones()
         if self.movimiento_activo:
             self.dibujar_movimiento()
+
+        if self.mostrar_submenu:
+            self.dibujar_submenu()
+
+    def dibujar_botones(self):
+        etiquetas = ["Acción", "Acción Adicional", "Mover", "Terminar Turno"]
+        font_btn = pygame.font.Font(None, 28)
+        for boton, texto in zip(self.botones, etiquetas):
+            pygame.draw.rect(self.screen, COLOR_BTN, boton)
+            pygame.draw.rect(self.screen, (0, 0, 0), boton, 2)
+            text_surface = font_btn.render(texto, True, (0, 0, 0))
+            text_rect = text_surface.get_rect(center=boton.center)
+            self.screen.blit(text_surface, text_rect)
 
 
 
@@ -160,11 +173,7 @@ class Pelea:
 
         if distancia <= self.radio_movimiento:
             self.orco_pos = (x, y)
-
-
             self.radio_movimiento -= distancia
-
-
             if self.radio_movimiento <= 0:
                 self.movimiento_activo = False 
                 print(f"Rango de movimiento agotado. Movimientos restantes: {self.radio_movimiento}")
@@ -184,14 +193,15 @@ class Pelea:
         self.movimiento_activo = False 
        
     def activar_submenu(self, tipo):
-       if self.submenu_tipo == tipo:
+        print("activar_submenu")
+        self.mostrar_submenu = True
+        if self.submenu_tipo == tipo:
             self.submenu_opciones = self.acciones[tipo]
-            self.mostrar_submenu = True
-       else:
-            self.mostrar_submenu = True
+        else:
             self.submenu_tipo = tipo
             self.submenu_opciones = self.acciones.get(tipo, [])
-       
+        
+        
    
        
 
@@ -200,7 +210,7 @@ class Pelea:
 
     def seleccionar_accion(self, opcion):
         print(f"Acción seleccionada: {opcion}")
-        self.mostrar_submenu = False                            
+        self.mostrar_submenu = False
                            
 
 
@@ -229,35 +239,28 @@ class Pelea:
                 exit()
             if evento.type == MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-
-
-                # Verificar si se hizo clic en algún botón principal
-                if self.botones[0].collidepoint(pos):  # Acción
-                    if not self.accion_utilizada:  # Si no se ha utilizado la acción principal
+                if self.botones[0].collidepoint(pos):
+                    if not self.accion_utilizada:
                         self.activar_submenu('accion')
-                        self.accion_utilizada = True  # Marcar como utilizada
+                        self.accion_utilizada = True
                     else:
                         print("Ya has utilizado tu acción principal este turno.")
-                elif self.botones[1].collidepoint(pos):  # Acción Adicional
-                    if not self.accion_adicional_utilizada:  # Si no se ha utilizado la acción adicional
+                elif self.botones[1].collidepoint(pos):  
+                    if not self.accion_adicional_utilizada: 
                         if self.mostrar_submenu and self.submenu_tipo == 'accion_adicional':
                             self.mostrar_submenu = False
                         else:
                             self.activar_submenu('accion_adicional')
-                        self.accion_adicional_utilizada = True  # Marcar como utilizada
+                        self.accion_adicional_utilizada = True  
                     else:
                         print("Ya has utilizado tu acción adicional este turno.")
-                elif self.botones[2].collidepoint(pos):  # Mover
-                    self.movimiento_activo = True  # Activar el modo de movimiento
-                elif self.botones[3].collidepoint(pos):  # Terminar Turno
+                elif self.botones[2].collidepoint(pos):  
+                    self.movimiento_activo = True  
+                elif self.botones[3].collidepoint(pos):
                     self.terminar_turno()
                     print("Turno terminado.")
-                    # Reiniciar las acciones al final del turno
                     self.accion_utilizada = False
                     self.accion_adicional_utilizada = False
-
-
-                # Verificar si se hizo clic en una casilla de movimiento
                 if self.movimiento_activo:
                     for casilla in self.casillas_movimiento:
                         casilla_x, casilla_y = casilla
@@ -269,12 +272,14 @@ class Pelea:
                             break
 
                 if self.mostrar_submenu:
+                    print("mostrar_submenu")
                     submenu_rect = pygame.Rect((ANCHO - 200) // 2, (ALTO - 100 - len(self.submenu_opciones) * 40) // 2, 200, 100 + len(self.submenu_opciones) * 40)
                     for i, opcion in enumerate(self.submenu_opciones):
                         y_offset = (i + 1) * 40
                         opcion_rect = pygame.Rect(submenu_rect.x + 10, submenu_rect.y + y_offset, submenu_rect.width - 20, 30)
                         if opcion_rect.collidepoint(pos):
                             self.seleccionar_accion(opcion)
+                            print(self.mostrar_submenu)
                             break
                    
 
@@ -290,14 +295,14 @@ class Pelea:
                             break
 
 
-                if self.mostrar_submenu:
-                    submenu_rect = pygame.Rect((ANCHO - 200) // 2, (ALTO - 100 - len(self.submenu_opciones) * 40) // 2, 200, 100 + len(self.submenu_opciones) * 40)
-                    for i, opcion in enumerate(self.submenu_opciones):
-                        y_offset = (i + 1) * 40
-                        opcion_rect = pygame.Rect(submenu_rect.x + 10, submenu_rect.y + y_offset, submenu_rect.width - 20, 30)
-                        if opcion_rect.collidepoint(pos):
-                            self.seleccionar_accion(opcion)
-                            break
+                # if self.mostrar_submenu:
+                #     submenu_rect = pygame.Rect((ANCHO - 200) // 2, (ALTO - 100 - len(self.submenu_opciones) * 40) // 2, 200, 100 + len(self.submenu_opciones) * 40)
+                #     for i, opcion in enumerate(self.submenu_opciones):
+                #         y_offset = (i + 1) * 40
+                #         opcion_rect = pygame.Rect(submenu_rect.x + 10, submenu_rect.y + y_offset, submenu_rect.width - 20, 30)
+                #         if opcion_rect.collidepoint(pos):
+                #             self.seleccionar_accion(opcion)
+                #             break
 
     def main(self):
         self.crear_cuadrillas()
