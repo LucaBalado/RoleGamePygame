@@ -1,10 +1,8 @@
 import pygame
 from pygame.locals import *
 import pathlib as pl
-import click
 
-
-ANCHO, ALTO = 1250, 700
+ANCHO, ALTO = 800, 600
 TAMANIO_CUADRILLA = 32
 COLOR_CUADRILLA = (200, 200, 200)
 COLOR_BTN = (100, 100, 255)
@@ -15,8 +13,9 @@ COLOR_FONDO_SUBMENU=(255,255,255)
 rangomover= 3
 
 class Pelea:
-    def __init__(self, fondo_path, sprite_path):
+    def __init__(self, juego, fondo_path, sprite_path):
         pygame.init()
+        self.juego = juego
         self.screen = pygame.display.set_mode((ANCHO, ALTO))
         pygame.display.set_caption("Campo de Batalla")
         fondo = pl.Path(fondo_path)
@@ -110,11 +109,7 @@ class Pelea:
         orco_pos_x = self.offset_x + self.orco_pos[0] * TAMANIO_CUADRILLA
         orco_pos_y = self.offset_y + self.orco_pos[1] * TAMANIO_CUADRILLA
         self.screen.blit(self.sprite_orco, (orco_pos_x, orco_pos_y))
-
-
-        self.dibujar_botones()
-
-
+        self.crear_botones()
         if self.movimiento_activo:
             self.dibujar_movimiento()
 
@@ -273,8 +268,6 @@ class Pelea:
                             self.mover_orco(casilla_x, casilla_y)
                             break
 
-
-                # Si el submenú está abierto, verificar si se hizo clic en las opciones dentro de él
                 if self.mostrar_submenu:
                     submenu_rect = pygame.Rect((ANCHO - 200) // 2, (ALTO - 100 - len(self.submenu_opciones) * 40) // 2, 200, 100 + len(self.submenu_opciones) * 40)
                     for i, opcion in enumerate(self.submenu_opciones):

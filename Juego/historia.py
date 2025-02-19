@@ -137,13 +137,9 @@ class Historia:
     
     def pelear(self):
         global running
-        
-        combate = Pelea("assets/peleabosque.png", f"/assets/sprites/{self.juego.raza.lower()}-{self.juego.clase.lower()}/neutral.png")
+        combate = Pelea(self.juego,"assets/peleabosque.png", f"assets/sprites/{self.juego.raza.lower()}-{self.juego.clase.lower()}/neutral.png")
         while running:
             combate.main()
-
-
-
 
     def dibujar_escena(self):
         screen.blit(papiro_fondo, (0, HEIGHT // 2))
